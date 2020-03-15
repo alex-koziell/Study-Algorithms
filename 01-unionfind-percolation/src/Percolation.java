@@ -6,7 +6,8 @@ public class Percolation {
     stored in the array siteValues, where the indexing uses row-major order.
     */
     
-    private final WeightedQuickUnionUF wquf;
+    private final WeightedQuickUnionUF openUF;
+    private final WeightedQuickUnionUF fillUF;
     private final int gridWidth;
     private final int numSites;
     private int numOpenSites;
@@ -20,7 +21,8 @@ public class Percolation {
         numSites = n*n;
         numOpenSites = 0;
 
-        wquf = new WeightedQuickUnionUF(numSites+2); // additional nodes for 'top' and 'bottom' at [numsites] and [numsites+1] for faster algorithm
+        openUF = new WeightedQuickUnionUF(numSites+2); // additional nodes for 'top' and 'bottom' at [numsites] and [numsites+1] for faster algorithm
+        fillUF = new WeightedQuickUnionUF(numSites+1); // just a top node to bypass the 'backwash problem'
         openSites = new boolean[numSites];
         for (int i = 0; i < numSites; ++i) {
             openSites[i] = false;
@@ -41,28 +43,36 @@ public class Percolation {
             // Cell above: Check if top row first
             if (row != 1) {
                 if (isOpen(row - 1, col)) {
-                    wquf.union(index, index - gridWidth);
+                    openUF.union(index, index - gridWidth);
+                    fillUF.union(index, index - gridWidth);
                 }
             } else {
-                wquf.union(index, numSites); // If top row, connect to top node
+                openUF.union(index, numSites); // If top row, connect to top node
+                fillUF.union(index, numSites);
             }
 
             // Cell below: Check if bottom row first
             if (row != gridWidth) {
-                if (isOpen(row + 1, col))
-                    wquf.union(index, index + gridWidth);
+                if (isOpen(row + 1, col)) {
+                    openUF.union(index, index + gridWidth);
+                    fillUF.union(index, index + gridWidth);
+                }
             } else {
-                wquf.union(index, numSites+1); // If bottom row, connect to bottom node
+                openUF.union(index, numSites+1); // If bottom row, connect site to bottom node in just one UF object
             }
             // Cell to the left
             if (col != 1) {
-                if (isOpen(row, col - 1))
-                    wquf.union(index, index - 1);
+                if (isOpen(row, col - 1)) {
+                    openUF.union(index, index - 1);
+                    fillUF.union(index, index - 1);
+                }
             }
             // Cell to the right
             if (col != gridWidth) {
-                if (isOpen(row, col + 1))
-                    wquf.union(index, index + 1);
+                if (isOpen(row, col + 1)) {
+                    openUF.union(index, index + 1);
+                    fillUF.union(index, index + 1);
+                }
             }
         }
     }
@@ -78,7 +88,7 @@ public class Percolation {
     public boolean isFull(int row, int col) {
         if (row > gridWidth || col > gridWidth || row <= 0 || col <= 0)
             throw new IllegalArgumentException("Index out of range: row=" + row + ", col=" + col);
-        return (wquf.find(indexAt(row, col)) == wquf.find(numSites));
+        return (fillUF.find(indexAt(row, col)) == fillUF.find(numSites));
     }
 
     // returns the number of open sites
@@ -87,7 +97,7 @@ public class Percolation {
     }
     // does the system percolate?
     public boolean percolates() {
-        if (wquf.find(numSites) == wquf.find(numSites+1))
+        if (openUF.find(numSites) == openUF.find(numSites+1))
             return true;
         return false;
     }
