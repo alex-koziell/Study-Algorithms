@@ -1,51 +1,53 @@
 import edu.princeton.cs.algs4.StdStats;
-import static edu.princeton.cs.algs4.StdRandom.uniform;
-import static java.lang.Math.sqrt;
+import edu.princeton.cs.algs4.StdRandom;
 
 public class PercolationStats {
 
-    double[] thresholds;
-    int numTrials; // number of trials
-    Percolation percolation;
+    private static final double CONFIDENCE_95 = 1.96;
+    private final int numTrials; // number of trials
+    private final double meanValue;
+    private final double stdDevValue;
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
-        if (n<=0 || trials<=0)
+        if (n <= 0 || trials <= 0)
             throw new IllegalArgumentException(("n and trials must be >0!"));
 
         numTrials = trials;
-        thresholds = new double[trials];
+        double[] thresholds = new double[trials];
 
         int numSites = n*n;
-        for (int i=0; i<trials; ++i) {
-            percolation = new Percolation(n);
-            Double numOpens = 0.0;
+        for (int i = 0; i < trials; ++i) {
+            Percolation percolation = new Percolation(n);
             while (!percolation.percolates()) {
-                percolation.open(uniform(n), uniform(n));
-                ++numOpens;
+                percolation.open(StdRandom.uniform(1, n+1), StdRandom.uniform(1, n+1));
             }
+            double numOpens = percolation.numberOfOpenSites();
             thresholds[i] = numOpens/numSites;
         }
+
+        meanValue = StdStats.mean(thresholds);
+        stdDevValue = StdStats.stddev(thresholds);
     }
 
     // sample mean of percolation threshold
     public double mean() {
-        return StdStats.mean(thresholds);
+        return meanValue;
     }
 
     // sample standard deviation of percolation threshold
     public double stddev() {
-        return StdStats.stddev(thresholds);
+        return stdDevValue;
     }
 
     // low endpoint of 95% confidence interval
     public double confidenceLo() {
-        return mean()-stddev()*1.96/sqrt(numTrials);
+        return meanValue-stdDevValue*CONFIDENCE_95/Math.sqrt(numTrials);
     }
 
     // high endpoint of 95% confidence interval
     public double confidenceHi() {
-        return mean()+stddev()*1.96/sqrt(numTrials);
+        return meanValue+stdDevValue*CONFIDENCE_95/Math.sqrt(numTrials);
     }
 
     // test client (see below)
