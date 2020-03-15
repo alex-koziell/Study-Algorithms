@@ -1,5 +1,5 @@
 # Study-Algorithms
-Algorithm Design and Analysis Practice, closely following Princeton's "Introduction to Algorithms" Course
+Algorithm Design and Analysis Practice, closely following Princeton's "Algorithms I" Course
 
 # Steps to Developing a Usable Algorithm:
 1. Model the problem.
