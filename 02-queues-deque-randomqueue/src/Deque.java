@@ -27,12 +27,14 @@ public class Deque<Item> implements Iterable<Item> {
 
     // add the item to the front
     public void addFirst(Item item) {
+        if (item == null) throw new IllegalArgumentException("Cannot add a null value!");
         items[head--] = item;
         if (head == -1) resize(2 * items.length); // repeated doubling
     }
 
     // add the item to the back
     public void addLast(Item item) {
+        if (item == null) throw new IllegalArgumentException("Cannot add a null value!");
         items[tail++] = item;
         if (tail == items.length) resize(2 * items.length);
     }
