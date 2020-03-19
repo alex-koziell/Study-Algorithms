@@ -28,15 +28,15 @@ public class Deque<Item> implements Iterable<Item> {
     // add the item to the front
     public void addFirst(Item item) {
         if (item == null) throw new IllegalArgumentException("Cannot add a null value!");
+        if (head == -1) resize(2*items.length); // repeated doubling
         items[head--] = item;
-        if (head == -1) resize(2 * items.length); // repeated doubling
     }
 
     // add the item to the back
     public void addLast(Item item) {
         if (item == null) throw new IllegalArgumentException("Cannot add a null value!");
+        if (tail == items.length) resize(2*items.length);
         items[tail++] = item;
-        if (tail == items.length) resize(2 * items.length);
     }
 
     // remove and return the item from the front
@@ -44,7 +44,7 @@ public class Deque<Item> implements Iterable<Item> {
         if (size() == 0) throw new NoSuchElementException("The deque is currently empty!");
         Item item = items[++head];
         items[head] = null;
-        if (size() > 0 && size() < items.length/4) resize(items.length/2);
+        if (size() > 0 && size() == items.length/4) resize(items.length/2);
         return item;
     }
 
@@ -53,7 +53,7 @@ public class Deque<Item> implements Iterable<Item> {
         if (size() == 0) throw new NoSuchElementException("The deque is currently empty!");
         Item item = items[--tail];
         items[tail] = null;
-        if (size() > 0 && size() < items.length/4) resize(items.length/2);
+        if (size() > 0 && size() == items.length/4) resize(items.length/2);
         return item;
     }
 
@@ -62,7 +62,7 @@ public class Deque<Item> implements Iterable<Item> {
 
     private class ArrayIterator implements Iterator<Item> {
         private int i = head;
-        private int end = tail-1;
+        private final int end = tail-1;
 
         public boolean hasNext() { return i < end; }
         public void remove() { throw new UnsupportedOperationException("Remove operation not yet supported for iterators"); }
@@ -76,14 +76,10 @@ public class Deque<Item> implements Iterable<Item> {
     private void resize(int capacity) {
         Item[] copy = (Item[]) new Object[capacity];
         int oldSize = size();
-        for (int i=0; i < oldSize; ++i) copy[i+capacity/4] = items[head+i+1];
+        for (int i = 0; i < oldSize; ++i) copy[i+capacity/4] = items[head+i+1];
         head = capacity/4 - 1;
         tail = capacity/4 + oldSize;
         items = copy;
-    }
-
-    public int capacity() {
-        return items.length;
     }
 
     // unit testing (required)
@@ -93,7 +89,7 @@ public class Deque<Item> implements Iterable<Item> {
         System.out.println("Size: " + deque.size());
 
         for (int i = 0; i < 10; ++i) {
-            System.out.println("Adding " + i + " to end from current size: " + deque.size() + ". Capacity: " + deque.capacity());
+            System.out.println("Adding " + i + " to end from current size: " + deque.size());
             deque.addLast(i);
         }
 
@@ -102,7 +98,7 @@ public class Deque<Item> implements Iterable<Item> {
         while (iterator.hasNext()) System.out.println(iterator.next());
 
         System.out.println("Emptying deque...");
-        while (!deque.isEmpty()) System.out.println("Removing " + deque.removeFirst() + ". Size: " + deque.size() + ". Capacity: " + deque.capacity());
+        while (!deque.isEmpty()) System.out.println("Removing " + deque.removeFirst() + ". Size: " + deque.size());
 
 
         System.out.println("Empty? " + deque.isEmpty());

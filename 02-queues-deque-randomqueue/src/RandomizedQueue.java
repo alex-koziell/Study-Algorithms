@@ -1,13 +1,10 @@
-import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdRandom;
-
 import java.util.Iterator;
-import java.util.Random;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
-    int N = 0;
-    Item[] items;
+    private int numItems = 0;
+    private Item[] items;
 
     // construct an empty randomized queue
     public RandomizedQueue() {
@@ -16,33 +13,33 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     // is the randomized queue empty?
-    public boolean isEmpty() { return (N == 0); }
+    public boolean isEmpty() { return (numItems == 0); }
 
     // return the number of items on the randomized queue
-    public int size() { return N; }
+    public int size() { return numItems; }
 
     // add the item
     public void enqueue(Item item) {
         if (item == null) throw new IllegalArgumentException("Cannot add a null value!");
-        if (N == items.length) resize(2*items.length);
-        items[N++] = item;
+        if (numItems == items.length) resize(2*items.length);
+        items[numItems++] = item;
     }
 
     // remove and return a random item
     public Item dequeue() {
         if (isEmpty()) throw new java.util.NoSuchElementException("Queue is empty!");
-        int index = StdRandom.uniform(N);
+        int index = StdRandom.uniform(numItems);
         Item item = items[index];  // get item from random index
-        items[index] = items[--N]; // overwrite array instance with the item at the end of the queue
-        items[N] = null;           // remove the end item
-        if (N > 0 && N == items.length/4) resize(items.length/2);
+        items[index] = items[--numItems]; // overwrite array instance with the item at the end of the queue
+        items[numItems] = null;           // remove the end item
+        if (numItems > 0 && numItems == items.length/4) resize(items.length/2);
         return item;
     }
 
     // return a random item (but do not remove it)
     public Item sample() {
         if (isEmpty()) throw new java.util.NoSuchElementException("Queue is empty!");
-        return items[StdRandom.uniform(N)];
+        return items[StdRandom.uniform(numItems)];
     }
 
     // return an independent iterator over items in random order
@@ -50,33 +47,24 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private class RandomIterator implements Iterator<Item> {
 
-        boolean[] used;
-        int count;
+        RandomizedQueue<Item> copy;
 
         RandomIterator() {
-             used = new boolean[N];
-             for (int i = 0; i < N; ++i) used[i] = false;
-             count = 0;
+             copy = new RandomizedQueue<>();
+             for (int i = 0; i < numItems; ++i) copy.enqueue(items[i]); // enqueue all items to a copy
         }
 
-        public boolean hasNext() { return (count < N); }
+        public boolean hasNext() { return (!copy.isEmpty()); }
         public Item next() {
             if (!hasNext()) throw new java.util.NoSuchElementException("No next element!");
-            int index = StdRandom.uniform(N);
-            if (used[index]) {
-                return next();
-            } else {
-                used[index] = true;
-                ++count;
-                return items[index];
-            }
+            return copy.dequeue();
         }
         public void remove() { throw new UnsupportedOperationException("Remove operation not yet supported for iterators"); }
     }
 
     private void resize(int capacity) {
         Item[] copy = (Item[]) new Object[capacity];
-        for (int i = 0; i < N; ++i) copy[i] = items[i];
+        for (int i = 0; i < numItems; ++i) copy[i] = items[i];
         items = copy;
     }
 
@@ -95,9 +83,9 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         Iterator<Integer> iterator = randomQueue.iterator();
         System.out.println("Randomly iterating through 10 elements:");
-        for(int i = 0; i < 10; ++i) System.out.println(iterator.next());
+        for (int i = 0; i < 10; ++i) System.out.println(iterator.next());
         System.out.println("Randomly iterating through 10 elements again, with the same iterator:");
-        for(int i = 0; i < 10; ++i) System.out.println(iterator.next());
+        for (int i = 0; i < 10; ++i) System.out.println(iterator.next());
         System.out.println("Current size: " + randomQueue.size());
 
 
