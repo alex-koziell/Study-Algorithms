@@ -84,13 +84,26 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     public static void main(String[] args) {
         RandomizedQueue<Integer> randomQueue = new RandomizedQueue<>();
 
+        System.out.println("Created new RandomizedQueue, currently empty: " + randomQueue.isEmpty());
+
         for (int i = 0; i < 100; ++i) {
             randomQueue.enqueue(i);
         }
 
-        Iterator<Integer> iterator = randomQueue.iterator();
-        while (iterator.hasNext()) System.out.println(iterator.next());
+        System.out.println("Added the numbers 0 to 99. Current size: " + randomQueue.size());
+        System.out.println("Random sample: " + randomQueue.sample());
 
+        Iterator<Integer> iterator = randomQueue.iterator();
+        System.out.println("Randomly iterating through 10 elements:");
+        for(int i = 0; i < 10; ++i) System.out.println(iterator.next());
+        System.out.println("Randomly iterating through 10 elements again, with the same iterator:");
+        for(int i = 0; i < 10; ++i) System.out.println(iterator.next());
+        System.out.println("Current size: " + randomQueue.size());
+
+
+        System.out.println("Randomly removing 10 elements: ");
+        for (int i = 0; i < 10; ++i) System.out.println(randomQueue.dequeue());
+        System.out.println("Current size: " + randomQueue.size());
     }
 
 }
