@@ -26,3 +26,5 @@ Algorithm Design and Analysis Practice, closely following Princeton's "Algorithm
 - Need to analyze program to determine set of operations.
    - Cost depends on machine, compiler.
    - Frequency depends on algorithm, input data.
+
+>"Good algorithms are better than supercomputers."
