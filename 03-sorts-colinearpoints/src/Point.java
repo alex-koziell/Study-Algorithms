@@ -64,10 +64,12 @@ public class Point implements Comparable<Point> {
      */
     public double slopeTo(Point that) {
         /* YOUR CODE HERE */
-        if (x == that.x && this.y == that.y) return Double.NEGATIVE_INFINITY; // equal
-        if (x == that.x) return Double.POSITIVE_INFINITY; // not equal, but vertical
-        if (y == that.y) return +0.0; // not equal nor vertical, but horizontal
-        return (that.y - y)/(that.x - x);
+        if (x == that.x && y == that.y) return Double.NEGATIVE_INFINITY; // equal
+        if (y == that.y) return +0.0; // not equal, but horizontal
+        if (x == that.x) return Double.POSITIVE_INFINITY; // not equal nor horizontal, but vertical
+        double dx = that.x - x;
+        double dy = that.y - y;
+        return dx/dy;
     }
 
     /**
@@ -151,7 +153,7 @@ public class Point implements Comparable<Point> {
         StdDraw.show();
 
         // print and draw the line segments
-        BruteCollinearPoints collinear = new BruteCollinearPoints(points);
+        FastCollinearPoints collinear = new FastCollinearPoints(points);
         for (LineSegment segment : collinear.segments()) {
             StdOut.println(segment);
             segment.draw();
