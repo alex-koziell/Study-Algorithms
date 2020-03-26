@@ -1,54 +1,39 @@
-import javax.sound.sampled.Line;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class BruteCollinearPoints {
 
-    private LineSegment[] lineSegments;
+    private final LineSegment[] lineSegments;
 
     // finds all line segments containing 4 points
     public BruteCollinearPoints(Point[] points) {
+        // error handling
         if (points == null) throw new IllegalArgumentException("points array was null!");
+        checkNullsAndDuplicates(points);
 
-        lineSegments = new LineSegment[0];
+        ArrayList<LineSegment> segmentsList = new ArrayList<LineSegment>();
+        Point[] pointsNO = Arrays.copyOf(points, points.length);
+        // sort in natural order
+        Arrays.sort(pointsNO);
 
-        // go through every combination
-        for (int p = 0; p < points.length; ++p) {
-            if (points[p] == null) throw new IllegalArgumentException("Found a null point!");
-            for (int q = p + 1; q < points.length; ++q) {
-                if (points[p].equals(points[q])) throw new IllegalArgumentException("Two identical points found!");
-                for (int r = q + 1; r < points.length; ++r) {
-                    if (points[p].equals(points[r])) throw new IllegalArgumentException("Two identical points found!");
-                    if (points[q].equals(points[r])) throw new IllegalArgumentException("Two identical points found!");
-                    for (int s = r + 1; s < points.length; ++s) {
-                        if (points[p].equals(points[s])) throw new IllegalArgumentException("Two identical points found!");
-                        if (points[q].equals(points[s])) throw new IllegalArgumentException("Two identical points found!");
-                        if (points[r].equals(points[s])) throw new IllegalArgumentException("Two identical points found!");
-
-                        // points are collinear iff their pairwise line segments are all parallel
-                        // p --- q --- r -- s
-                        // check if collinear
-                        if (Math.abs(points[p].slopeTo(points[q])) == Math.abs(points[p].slopeTo(points[r])) &&
-                            Math.abs(points[p].slopeTo(points[q])) == Math.abs(points[p].slopeTo(points[s]))) {
-                            // if collinear, order the points
-                            int bottomLeft = p;
-                            int topRight = p;
-                            if (points[q].compareTo(points[bottomLeft]) == -1) bottomLeft = q;
-                            if (points[r].compareTo(points[bottomLeft]) == -1) bottomLeft = r;
-                            if (points[s].compareTo(points[bottomLeft]) == -1) bottomLeft = s;
-                            if (points[r].compareTo(points[topRight]) == +1) topRight = r;
-                            if (points[q].compareTo(points[topRight]) == +1) topRight = q;
-                            if (points[s].compareTo(points[topRight]) == +1) topRight = s;
-
-                            // memory-saving solution (slow)
-                            LineSegment[] oldLineSegments = lineSegments;
-                            lineSegments = new LineSegment[lineSegments.length+1];
-                            for (int i = 0; i < oldLineSegments.length; ++i) lineSegments[i] = oldLineSegments[i];
-                            lineSegments[lineSegments.length-1] = new LineSegment(points[bottomLeft], points[topRight]);
+        // go through every combination, now naturally ordered
+        for (int p = 0; p < pointsNO.length - 3; ++p) {
+            for (int q = p + 1; q < pointsNO.length - 2; ++q) {
+                for (int r = q + 1; r < pointsNO.length - 1; ++r) {
+                    // check if 3rd point collinear
+                    if (pointsNO[p].slopeTo(pointsNO[q]) == pointsNO[p].slopeTo(pointsNO[r])) {
+                        for (int s = r + 1; s < pointsNO.length; ++s) {
+                            // check if 4th point collinear
+                            if (pointsNO[p].slopeTo(pointsNO[q]) == pointsNO[p].slopeTo(pointsNO[s])) {
+                                segmentsList.add(new LineSegment(pointsNO[p], pointsNO[s]));
+                            }
                         }
                     }
                 }
             }
         }
 
+        lineSegments = segmentsList.toArray(new LineSegment[segmentsList.size()]);
     }
 
     // the number of line segments
@@ -58,6 +43,18 @@ public class BruteCollinearPoints {
 
     // the line segments
     public LineSegment[] segments() {
-        return lineSegments;
+        return Arrays.copyOf(lineSegments, lineSegments.length);
+    }
+
+    private void checkNullsAndDuplicates(Point[] points) {
+        for (int i = 0; i < points.length; ++i) {
+            if (points[i] == null) throw new IllegalArgumentException("Found a null point!");
+        }
+
+        for (int i = 0; i < points.length - 1; ++i) {
+            for (int j = i + 1; j < points.length; ++j) {
+                if (points[i].compareTo(points[j]) == 0) throw new IllegalArgumentException("Found duplicate points!");
+            }
+        }
     }
 }
