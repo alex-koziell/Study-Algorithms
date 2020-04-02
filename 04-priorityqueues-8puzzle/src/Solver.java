@@ -4,13 +4,12 @@ import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 
 public class Solver {
 
     private int moves;
     private boolean solved = false;
-    private ArrayList<Board> solutionList;
+    private final ArrayList<Board> solutionList;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
@@ -28,23 +27,38 @@ public class Solver {
 
             // actual board
             SearchNode dequeued = minPQ.delMin();
-            solutionList.add(dequeued.board);
-            if (dequeued.hamming() == dequeued.moves) {
+            if (dequeued.board.isGoal()) {
                 solved = true;
                 moves = dequeued.moves;
-                break;
+
+                SearchNode currentNode = dequeued;
+                for (int i = 0; i < moves + 1; ++i) {
+                    solutionList.add(currentNode.board);
+                    currentNode = currentNode.prevNode;
+                }
+                return;
             }
             // next move: add each possible neighbour to minPQ
             for (Board neighbour : dequeued.board.neighbors()) {
-                if (!neighbour.equals(dequeued.board)) minPQ.insert(new SearchNode(neighbour, dequeued.moves + 1, dequeued.board));
+                if (dequeued.moves == 0) {
+                    minPQ.insert(new SearchNode(neighbour, dequeued.moves + 1, dequeued));
+                } else {
+                    if (!neighbour.equals(dequeued.prevNode.board))
+                        minPQ.insert(new SearchNode(neighbour, dequeued.moves + 1, dequeued));
+                }
             }
 
             // twin board
             dequeued = twinPQ.delMin();
             // if twin board solution found, break loop leaving solved false
-            if (dequeued.hamming() == dequeued.moves) break;
+            if (dequeued.board.isGoal()) return;
             for (Board neighbour : dequeued.board.neighbors()) {
-                if (!neighbour.equals(dequeued.board)) twinPQ.insert(new SearchNode(neighbour, dequeued.moves + 1, dequeued.board));
+                if (dequeued.moves == 0) {
+                    twinPQ.insert(new SearchNode(neighbour, dequeued.moves + 1, dequeued));
+                } else {
+                    if (!neighbour.equals(dequeued.prevNode.board))
+                        twinPQ.insert(new SearchNode(neighbour, dequeued.moves + 1, dequeued));
+                }
             }
         }
     }
@@ -63,36 +77,36 @@ public class Solver {
     private class SearchNode {
         private final int moves;
         private final Board board;
-        private final Board prevBoard;
-        private final int hamming;
+        private final SearchNode prevNode;
+//        private final int hamming;
         private final int manhattan;
 
-        public SearchNode(Board toBoard, int moveNum, Board fromBoard) {
+        public SearchNode(Board toBoard, int moveNum, SearchNode fromNode) {
             moves = moveNum;
             board = toBoard;
-            prevBoard = fromBoard;
-            hamming = moves + board.hamming();
+            prevNode = fromNode;
+//            hamming = moves + board.hamming();
             manhattan = moves + board.manhattan();
         }
 
-        public int hamming() { return hamming; }
+//        public int hamming() { return hamming; }
         public int manhattan() { return manhattan; }
 
     }
 
-    private Comparator<SearchNode> hammingPriority() {
-        return new HammingPriority();
-    }
+//    private Comparator<SearchNode> hammingPriority() {
+//        return new HammingPriority();
+//    }
 
-    private class HammingPriority implements Comparator<SearchNode> {
-        public int compare(SearchNode node1, SearchNode node2) {
-            int p1 = node1.hamming();
-            int p2 = node2.hamming();
-            if (p1 < p2) return -1;
-            if (p1 > p2) return +1;
-            return 0;
-        }
-    }
+//    private class HammingPriority implements Comparator<SearchNode> {
+//        public int compare(SearchNode node1, SearchNode node2) {
+//            int p1 = node1.hamming();
+//            int p2 = node2.hamming();
+//            if (p1 < p2) return -1;
+//            if (p1 > p2) return +1;
+//            return 0;
+//        }
+//    }
 
     private Comparator<SearchNode> manhattanPriority() {
         return new ManhattanPriority();
