@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Solver {
 
-    private int moves = 0;
+    private int moves;
     private boolean solved = false;
     private ArrayList<Board> solutionList;
 
@@ -25,18 +25,18 @@ public class Solver {
 
         solutionList = new ArrayList<>();
         while (!solved) {
-            ++moves;
 
             // actual board
             SearchNode dequeued = minPQ.delMin();
             solutionList.add(dequeued.board);
             if (dequeued.hamming() == dequeued.moves) {
                 solved = true;
+                moves = dequeued.moves;
                 break;
             }
             // next move: add each possible neighbour to minPQ
             for (Board neighbour : dequeued.board.neighbors()) {
-                minPQ.insert(new SearchNode(neighbour, moves, dequeued.board));
+                if (!neighbour.equals(dequeued.board)) minPQ.insert(new SearchNode(neighbour, dequeued.moves + 1, dequeued.board));
             }
 
             // twin board
@@ -44,7 +44,7 @@ public class Solver {
             // if twin board solution found, break loop leaving solved false
             if (dequeued.hamming() == dequeued.moves) break;
             for (Board neighbour : dequeued.board.neighbors()) {
-                twinPQ.insert(new SearchNode(neighbour, moves, dequeued.board));
+                if (!neighbour.equals(dequeued.board)) twinPQ.insert(new SearchNode(neighbour, dequeued.moves + 1, dequeued.board));
             }
         }
     }
@@ -55,7 +55,7 @@ public class Solver {
     }
 
     // min number of moves to solve initial board
-    public int moves() { return moves-1; }
+    public int moves() { return moves; }
 
     // sequence of boards in a shortest solution
     public Iterable<Board> solution() { return solutionList; }
@@ -64,15 +64,19 @@ public class Solver {
         private final int moves;
         private final Board board;
         private final Board prevBoard;
+        private final int hamming;
+        private final int manhattan;
 
         public SearchNode(Board toBoard, int moveNum, Board fromBoard) {
             moves = moveNum;
             board = toBoard;
             prevBoard = fromBoard;
+            hamming = moves + board.hamming();
+            manhattan = moves + board.manhattan();
         }
 
-        public int hamming() { return moves + board.hamming(); }
-        public int manhattan() { return moves + board.manhattan(); }
+        public int hamming() { return hamming; }
+        public int manhattan() { return manhattan; }
 
     }
 
