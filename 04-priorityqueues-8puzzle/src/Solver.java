@@ -1,15 +1,15 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 
 public class Solver {
 
     private int moves;
-    private boolean solved = false;
-    private final ArrayList<Board> solutionList;
+    private final boolean solvable;
+    private final Stack<Board> solutionStack;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
@@ -22,18 +22,18 @@ public class Solver {
         minPQ.insert(new SearchNode(initial, 0, null));
         twinPQ.insert(new SearchNode(initial.twin(), 0, null));
 
-        solutionList = new ArrayList<>();
-        while (!solved) {
+        solutionStack = new Stack<>();
+        while (true) {
 
             // actual board
             SearchNode dequeued = minPQ.delMin();
             if (dequeued.board.isGoal()) {
-                solved = true;
+                solvable = true;
                 moves = dequeued.moves;
 
                 SearchNode currentNode = dequeued;
                 for (int i = 0; i < moves + 1; ++i) {
-                    solutionList.add(currentNode.board);
+                    solutionStack.push(currentNode.board);
                     currentNode = currentNode.prevNode;
                 }
                 return;
@@ -51,7 +51,10 @@ public class Solver {
             // twin board
             dequeued = twinPQ.delMin();
             // if twin board solution found, break loop leaving solved false
-            if (dequeued.board.isGoal()) return;
+            if (dequeued.board.isGoal()) {
+                solvable = false;
+                return;
+            }
             for (Board neighbour : dequeued.board.neighbors()) {
                 if (dequeued.moves == 0) {
                     twinPQ.insert(new SearchNode(neighbour, dequeued.moves + 1, dequeued));
@@ -64,15 +67,13 @@ public class Solver {
     }
 
     // is the initial board solvable? (see below)
-    public boolean isSolvable() {
-        return solved;
-    }
+    public boolean isSolvable() { return solvable; }
 
     // min number of moves to solve initial board
-    public int moves() { return moves; }
+    public int moves() { return solvable ? moves : -1; }
 
     // sequence of boards in a shortest solution
-    public Iterable<Board> solution() { return solutionList; }
+    public Iterable<Board> solution() { return solvable ? solutionStack : null; }
 
     private class SearchNode {
         private final int moves;
