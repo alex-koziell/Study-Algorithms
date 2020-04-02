@@ -47,8 +47,8 @@ public class PuzzleChecker {
 
             // solve the slider puzzle
             Board initial = new Board(tiles);
-//            Solver solver = new Solver(initial);
-//            StdOut.println(filename + ": " + solver.moves());
+            Solver solver = new Solver(initial);
+            StdOut.println(filename + ": " + solver.moves());
         }
     }
 }
