@@ -112,9 +112,9 @@ public class KdTree {
         }
 
         // if rectangle min bounds to the left or below, search left/bottom branch
-        if (compareX ? rect.xmin() < node.p.x() : rect.ymin() < node.p.y()) range(node.lb, rect, !compareX, results);
+        if (compareX ? rect.xmin() <= node.p.x() : rect.ymin() <= node.p.y()) range(node.lb, rect, !compareX, results);
         // if rectangle max bounds above and to the right, search right/top branch
-        if (compareX ? node.p.x() < rect.xmax() : node.p.y() < rect.ymax()) range(node.rt, rect, !compareX, results);
+        if (compareX ? node.p.x() <= rect.xmax() : node.p.y() <= rect.ymax()) range(node.rt, rect, !compareX, results);
 
     }
 
@@ -131,12 +131,18 @@ public class KdTree {
 
         // if this point is closer, make the new champion
         double closestDist = champion.distanceSquaredTo(queryPt);
-        if (node.rect.distanceSquaredTo(queryPt) < closestDist) {
-            if (node.p.distanceSquaredTo(queryPt) < closestDist) champion = node.p;
+//        if (node.rect.distanceSquaredTo(queryPt) <= closestDist) {
+            if (node.p.distanceSquaredTo(queryPt) <= closestDist) champion = node.p;
             // may be closer points to left or below
-            if (compareX ? node.p.x() > queryPt.x() : node.p.y() > queryPt.y()) champion = nearest(node.lb, queryPt, !compareX, champion);
-            else champion = nearest(node.rt, queryPt, !compareX, champion);
-        }
+            if (compareX ? node.p.x() >= queryPt.x() : node.p.y() >= queryPt.y()) {
+                champion = nearest(node.lb, queryPt, !compareX, champion);
+                champion = nearest(node.rt, queryPt, !compareX, champion);
+            }
+            else {
+                champion = nearest(node.rt, queryPt, !compareX, champion);
+                champion = nearest(node.lb, queryPt, !compareX, champion);
+            }
+//        }
 
         return champion;
     }
